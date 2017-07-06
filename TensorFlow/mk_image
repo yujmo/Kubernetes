@@ -2,4 +2,5 @@
     mo@cxz ~ $ docker run -it --name tf -h tf ubuntu /bin/bash
     root@tf:/# apt-get upgrade -y
     root@tf:/# apt-get install python3 python3-pip wget -y
+    root@tf:/# pip3 install --upgrade pip
     root@tf:/# pip3 install tensorflow
