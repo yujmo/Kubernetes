@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: worker-2
+spec:
+  selector:
+    work: worker2
+  ports:
+    - port: 8493
+      targetPort: 8493
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-worker2
+  labels: 
+    work: worker2
+spec:
+  containers:
+  - name: test-worker2
+    image: tensorflow
+    command: ["/usr/bin/python3","/Distributed.py","--job_name=worker","--task_index=1"]
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: http_proxy
+      value: "http://58.193.0.178:3128"
+    - name: https_proxy
+      value: "http://58.193.0.178:3128"
+      ports:
+        - containerPort: 8493
+  nodeSelector: 
+    tensorflow : work3
+  restartPolicy: Never  

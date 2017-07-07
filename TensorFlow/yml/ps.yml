@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: ps-1
+spec:
+  selector:
+    name: ps-1
+  ports:
+    - port: 8491
+      targetPort: 8491
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-ps
+  labels: 
+    name: ps-1
+spec:
+  containers:
+  - name: test-ps
+    image: tensorflow
+    command: ["/usr/bin/python3","/Distributed.py","--job_name=ps","--task_index=0"]
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: http_proxy
+      value: "http://58.193.0.178:3128"
+    - name: https_proxy
+      value: "http://58.193.0.178:3128"
+      ports:
+        - containerPort: 8491
+  nodeSelector: 
+    tensorflow : work1
+  restartPolicy: Never  
