@@ -4,26 +4,19 @@ metadata:
   name: wordpress-mysql
   labels:
     app: wordpress
+  annotations:
+    tenxcloud.com/schemaPortname: mysql-1/TCP
 spec:
   ports:
-    - port: 3306
+    - name: mysql-1
+      protocol: TCP
+      targetPort: 3306
+      port: 3306
   selector:
     app: wordpress
     tier: mysql
-  clusterIP: None
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pv-claim
-  labels:
-    app: wordpress
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
+  externalIPs:
+    - 11.11.1.1
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -32,8 +25,6 @@ metadata:
   labels:
     app: wordpress
 spec:
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -44,20 +35,8 @@ spec:
       - image: mysql:5.6
         name: mysql
         env:
-          # $ kubectl create secret generic mysql-pass --from-file=password.txt
-          # make sure password.txt does not have a trailing newline
         - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-pass
-              key: password.txt
+          value: admin 
         ports:
         - containerPort: 3306
-          name: mysql
-        volumeMounts:
-        - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql
-      volumes:
-      - name: mysql-persistent-storage
-        persistentVolumeClaim:
-          claimName: mysql-pv-claim
+          name: mysql-1
