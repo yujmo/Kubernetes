@@ -1,0 +1,42 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: sshd
+  labels:
+    name: sshd
+  annotations:
+    tenxcloud.com/schemaPortname: sshd-1/TCP
+spec:
+  ports:
+    - name: sshd-1
+      protocol: TCP
+      targetPort: 22
+      port: 22
+  selector:
+    name: sshd-1
+  externalIPs:
+    - 11.11.1.1
+---
+kind: Deployment
+apiVersion: v1
+metadata:
+  name: sshd
+  labels:
+    name: sshd-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: sshd-1
+  template:
+    metadata:
+      labels:
+        name: sshd-1
+    spec:
+      containers:
+        - name: sshd
+          image: 'index.tenxcloud.com/m1103137684/sshd:latest'
+          command: ["/usr/sbin/sshd","-D"]
+          ports:
+            - containerPort: 22
+              protocol: TCP
