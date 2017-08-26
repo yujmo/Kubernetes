@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab
+  labels:
+    app: gitlab
+  annotations:
+    tenxcloud.com/schemaPortname: gitlab-1/TCP
+spec:
+  ports:
+    - name: gitlab-1
+      protocol: TCP
+      targetPort: 443
+      port: 443
+  selector:
+    app: gitlab
+  externalIPs:
+    - 11.11.1.1
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gitlab
+  labels:
+    app: gitlab
+spec:
+  template:
+    metadata:
+      labels:
+        app: gitlab
+    spec:
+      containers:
+      - image: index.tenxcloud.com/m1103137684/gitlab-ce:latest
+        name: gitlab
+        env:
+        - name: GITLAB_OMNIBUS_CONFIG
+          value: external_url 'https://127.0.0.1'
+        ports:
+        - containerPort: 443
+          name: gitlab-1
