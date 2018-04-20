@@ -4,7 +4,6 @@ import time
 
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-tf.device('/gpu:1')
 
 flags = tf.app.flags
 flags.DEFINE_string("data_dir", "/tmp/mnist-data",
@@ -16,9 +15,9 @@ flags.DEFINE_integer("task_index", None,
                      "Worker task index, should be >= 0. task_index=0 is "
                      "the master worker task the performs the variable "
                      "initialization ")
-#flags.DEFINE_integer("num_gpus", 2,
-#                     "Total number of gpus for each machine."
-#                     "If you don't use GPU, please set it to '0'")
+flags.DEFINE_integer("num_gpus", 1,
+                     "Total number of gpus for each machine."
+                    "If you don't use GPU, please set it to '0'")
 flags.DEFINE_integer("replicas_to_aggregate", None,
                      "Number of replicas to aggregate before parameter update"
                      "is applied (For sync_replicas mode only; default: "
@@ -83,20 +82,20 @@ def main(unused_argv):
 
   is_chief = (FLAGS.task_index == 0)
   
-#  if FLAGS.num_gpus > 0:
-#    if FLAGS.num_gpus < num_workers:
-#      raise ValueError("number of gpus is less than number of workers")
-#    # Avoid gpu allocation conflict: now allocate task_num -> #gpu 
-#    # for each worker in the corresponding machine
-#    gpu = (FLAGS.task_index % FLAGS.num_gpus)
-#    worker_device = "/job:worker/task:%d/gpu:%d" % (FLAGS.task_index, gpu)
-#  elif FLAGS.num_gpus == 0:
-#    # Just allocate the CPU to worker server
-#    cpu = 0
-#    worker_device = "/job:worker/task:%d/cpu:%d" % (FLAGS.task_index, cpu)
-#  # The device setter will automatically place Variables ops on separate
-#  # parameter servers (ps). The non-Variable ops will be placed on the workers.
-#  # The ps use CPU and workers use corresponding GPU
+  if FLAGS.num_gpus > 0:
+    if FLAGS.num_gpus < num_workers:
+      raise ValueError("number of gpus is less than number of workers")
+    # Avoid gpu allocation conflict: now allocate task_num -> #gpu 
+    # for each worker in the corresponding machine
+    gpu = (FLAGS.task_index % FLAGS.num_gpus)
+    worker_device = "/job:worker/task:%d/gpu:%d" % (FLAGS.task_index, gpu)
+  elif FLAGS.num_gpus == 0:
+    # Just allocate the CPU to worker server
+    cpu = 0
+    worker_device = "/job:worker/task:%d/cpu:%d" % (FLAGS.task_index, cpu)
+  # The device setter will automatically place Variables ops on separate
+  # parameter servers (ps). The non-Variable ops will be placed on the workers.
+  # The ps use CPU and workers use corresponding GPU
   
   worker_device = "/job:worker/task:%d/gpu:0" % FLAGS.task_index
   with tf.device(
